@@ -1,4 +1,4 @@
-pytorch == 1.1.0
+torch
 tqdm
 nltk
 pandas

@@ -9,3 +9,6 @@
 convert_model.py
 convert.sh
 test.sh
+__pycache__
+/data
+Pipfile.lock

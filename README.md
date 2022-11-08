@@ -4,6 +4,12 @@ This is the implementation of [Improving  Chinese  Word  Segmentation  with  Wor
 
 Please contact us at `yhtian@uw.edu` or `cuhksz.nlp@gmail.com` if you have any questions.
 
+Forked fixed:
+
+1. Allow CPU predicting
+2. Default using output file by append '.out' on input filename
+   `python wmseg_main.py --do_predict --input_file=./sample_data/sentence.txt --eval_model=./models/WMSeg.BERT.CTB6.v1.0.pt`
+
 ## Citation
 
 If you use or extend our work, please cite our paper at ACL2020.
@@ -23,8 +29,9 @@ If you use or extend our work, please cite our paper at ACL2020.
 ## Requirements
 
 Our code works with the following environment.
-* `python=3.6`
-* `pytorch=1.1`
+
+*   `python=3.6`
+*   `pytorch=1.1`
 
 ## Downloading BERT, ZEN and WMSeg
 
@@ -54,17 +61,17 @@ You can find the command lines to train and test models on a specific dataset in
 
 Here are some important parameters:
 
-* `--do_train`: train the model.
-* `--do_test`: test the model.
-* `--use_bert`: use BERT as encoder.
-* `--use_zen`: use ZEN as encoder.
-* `--bert_model`: the directory of pre-trained BERT/ZEN model.
-* `--use_memory`: use key-value memory networks.
-* `--decoder`: use `crf` or `softmax` as the decoder.
-* `--ngram_flag`: use `av`, `dlg`, or `pmi` to construct the lexicon N.
-* `--av_threshold`: when using `av` to construct the lexicon N, n-grams whose AV score is lower than the threshold will be excluded from the lexicon N.
-* `--ngram_num_threshold`: n-grams whose frequency is lower than the threshold will be excluded from the lexicon N. Note that, when the threshold is set to 1, no n-gram is filtered out by its frequency. We therefore **DO NOT** recommend you to use 1 as the n-gram frequency threshold.
-* `--model_name`: the name of model to save.
+*   `--do_train`: train the model.
+*   `--do_test`: test the model.
+*   `--use_bert`: use BERT as encoder.
+*   `--use_zen`: use ZEN as encoder.
+*   `--bert_model`: the directory of pre-trained BERT/ZEN model.
+*   `--use_memory`: use key-value memory networks.
+*   `--decoder`: use `crf` or `softmax` as the decoder.
+*   `--ngram_flag`: use `av`, `dlg`, or `pmi` to construct the lexicon N.
+*   `--av_threshold`: when using `av` to construct the lexicon N, n-grams whose AV score is lower than the threshold will be excluded from the lexicon N.
+*   `--ngram_num_threshold`: n-grams whose frequency is lower than the threshold will be excluded from the lexicon N. Note that, when the threshold is set to 1, no n-gram is filtered out by its frequency. We therefore **DO NOT** recommend you to use 1 as the n-gram frequency threshold.
+*   `--model_name`: the name of model to save.
 
 ## Predicting
 
@@ -72,14 +79,14 @@ Here are some important parameters:
 
 Here are some important parameters:
 
-* `--do_predict`: segment the sentences using a pre-trained WMSeg model.
-* `--input_file`: the file contains sentences to be segmented. Each line contains one sentence; you can refer to [a sample input file](./sample_data/sentence.txt) for the input format.
-* `--output_file`: the path of the output file. Words are segmented by a space.
-* `--eval_model`: the pre-trained WMSeg model to be used to segment the sentences in the input file.
+*   `--do_predict`: segment the sentences using a pre-trained WMSeg model.
+*   `--input_file`: the file contains sentences to be segmented. Each line contains one sentence; you can refer to [a sample input file](./sample_data/sentence.txt) for the input format.
+*   `--output_file`: the path of the output file. Words are segmented by a space.
+*   `--eval_model`: the pre-trained WMSeg model to be used to segment the sentences in the input file.
 
 ## To-do List
 
-* Release a toolkit using WMSeg with necessary APIs
+*   Release a toolkit using WMSeg with necessary APIs
 
 You can leave comments in the `Issues` section, if you want us to implement any functions.
 
