@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import os
 
 import math
 
@@ -8,16 +7,8 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from pytorch_pretrained_bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE
 
-from pytorch_pretrained_bert.modeling import (
-    CONFIG_NAME,
-    WEIGHTS_NAME,
-    BertConfig,
-    BertPreTrainedModel,
-    BertModel,
-)
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+from pytorch_pretrained_bert.modeling import BertModel
 
 import pytorch_pretrained_zen as zen
 
@@ -97,54 +88,14 @@ class WMSeg(nn.Module):
         self.zen_ngram_dict = None
 
         if self.hpara["use_bert"]:
-            if args.do_train:
-                cache_dir = (
-                    args.cache_dir
-                    if args.cache_dir
-                    else os.path.join(
-                        str(PYTORCH_PRETRAINED_BERT_CACHE),
-                        "distributed_{}".format(args.local_rank),
-                    )
-                )
-                self.bert_tokenizer = BertTokenizer.from_pretrained(
-                    args.bert_model, do_lower_case=self.hpara["do_lower_case"]
-                )
-                self.bert = BertModel.from_pretrained(
-                    args.bert_model, cache_dir=cache_dir
-                )
-                self.hpara["bert_tokenizer"] = self.bert_tokenizer
-                self.hpara["config"] = self.bert.config
-            else:
-                self.bert_tokenizer = self.hpara["bert_tokenizer"]
-                self.bert = BertModel(self.hpara["config"])
+            self.bert_tokenizer = self.hpara["bert_tokenizer"]
+            self.bert = BertModel(self.hpara["config"])
             hidden_size = self.bert.config.hidden_size
             self.dropout = nn.Dropout(self.bert.config.hidden_dropout_prob)
         elif self.hpara["use_zen"]:
-            if args.do_train:
-                cache_dir = (
-                    args.cache_dir
-                    if args.cache_dir
-                    else os.path.join(
-                        str(zen.PYTORCH_PRETRAINED_BERT_CACHE),
-                        "distributed_{}".format(args.local_rank),
-                    )
-                )
-                self.zen_tokenizer = zen.BertTokenizer.from_pretrained(
-                    args.bert_model, do_lower_case=self.hpara["do_lower_case"]
-                )
-                self.zen_ngram_dict = zen.ZenNgramDict(
-                    args.bert_model, tokenizer=self.zen_tokenizer
-                )
-                self.zen = zen.modeling.ZenModel.from_pretrained(
-                    args.bert_model, cache_dir=cache_dir
-                )
-                self.hpara["zen_tokenizer"] = self.zen_tokenizer
-                self.hpara["zen_ngram_dict"] = self.zen_ngram_dict
-                self.hpara["config"] = self.zen.config
-            else:
-                self.zen_tokenizer = self.hpara["zen_tokenizer"]
-                self.zen_ngram_dict = self.hpara["zen_ngram_dict"]
-                self.zen = zen.modeling.ZenModel(self.hpara["config"])
+            self.zen_tokenizer = self.hpara["zen_tokenizer"]
+            self.zen_ngram_dict = self.hpara["zen_ngram_dict"]
+            self.zen = zen.modeling.ZenModel(self.hpara["config"])
             hidden_size = self.zen.config.hidden_size
             self.dropout = nn.Dropout(self.zen.config.hidden_dropout_prob)
         else:
@@ -161,9 +112,6 @@ class WMSeg(nn.Module):
             self.crf = CRF(tagset_size=self.num_labels - 3, gpu=args.device != "cpu")
         else:
             self.crf = None
-
-        if args.do_train:
-            self.spec["hpara"] = self.hpara
 
     def forward(
         self,
@@ -221,19 +169,6 @@ class WMSeg(nn.Module):
             tag_seq = torch.argmax(F.log_softmax(logits, dim=2), dim=2)
 
         return total_loss, tag_seq
-
-    @staticmethod
-    def init_hyper_parameters(args):
-        hyper_parameters = DEFAULT_HPARA.copy()
-        hyper_parameters["max_seq_length"] = args.max_seq_length
-        hyper_parameters["max_ngram_size"] = args.max_ngram_size
-        hyper_parameters["max_ngram_length"] = args.max_ngram_length
-        hyper_parameters["use_bert"] = args.use_bert
-        hyper_parameters["use_zen"] = args.use_zen
-        hyper_parameters["do_lower_case"] = args.do_lower_case
-        hyper_parameters["use_memory"] = args.use_memory
-        hyper_parameters["decoder"] = args.decoder
-        return hyper_parameters
 
     @property
     def model(self):
