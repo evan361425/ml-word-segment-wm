@@ -8,14 +8,17 @@ from wmseg_eval import eval_sentence
 from wmseg_model import WMSeg
 
 
-def predict(args):
-    if type(args) is dict:
-        args = _parse_args(
-            [f"--{k}{'' if v is True else '='+v}".strip() for k, v in args.items()]
-        )
-    if args.no_cuda:
+def load_model(path, no_cuda=False):
+    device, _ = get_device(no_cuda)
+    model = torch.load(path, map_location=device)
+    seg_model = WMSeg.from_spec(model["spec"], model["state_dict"], device)
+    return seg_model
+
+
+def get_device(no_cuda):
+    if no_cuda:
         device = torch.device(
-            "cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu"
+            "cuda" if torch.cuda.is_available() and not no_cuda else "cpu"
         )
         n_gpu = torch.cuda.device_count()
     else:
@@ -23,13 +26,22 @@ def predict(args):
         n_gpu = 1
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
         torch.distributed.init_process_group(backend="nccl")
+    return (device, n_gpu)
+
+
+def predict(args, seg_model: WMSeg = None):
+    if type(args) is dict:
+        args = _parse_args(
+            [f"--{k}{'' if v is True else '='+v}".strip() for k, v in args.items()]
+        )
+
+    device, n_gpu = get_device(args.no_cuda)
     args.device = device.type
     print("device: {} gpu#: {}, 16-bits training: {}".format(device, n_gpu, args.fp16))
 
-    seg_model_checkpoint = torch.load(args.model, map_location=device)
-    seg_model = WMSeg.from_spec(
-        seg_model_checkpoint["spec"], seg_model_checkpoint["state_dict"], args
-    )
+    if seg_model is None:
+        model = torch.load(args.model, map_location=device)
+        seg_model = WMSeg.from_spec(model["spec"], model["state_dict"], args)
 
     eval_examples = seg_model.load_data(args.input, do_predict=True)
     convert_examples_to_features = seg_model.convert_examples_to_features
@@ -106,7 +118,7 @@ def predict(args):
             writer.write("%s\n" % seg_pred_str)
 
 
-def _parse_args(v):
+def _parse_args(v=None):
     parser = argparse.ArgumentParser()
 
     parser.add_argument(

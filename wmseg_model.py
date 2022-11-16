@@ -65,12 +65,12 @@ class WordKVMN(nn.Module):
 
 
 class WMSeg(nn.Module):
-    def __init__(self, word2id, gram2id, labelmap, hpara, args):
+    def __init__(self, word2id, gram2id, labelmap, hpara, device):
         super().__init__()
         self.spec = locals()
         self.spec.pop("self")
         self.spec.pop("__class__")
-        self.spec.pop("args")
+        self.spec.pop("device")
 
         self.word2id = word2id
         self.gram2id = gram2id
@@ -109,7 +109,7 @@ class WMSeg(nn.Module):
         self.classifier = nn.Linear(hidden_size, self.num_labels, bias=False)
 
         if self.hpara["decoder"] == "crf":
-            self.crf = CRF(tagset_size=self.num_labels - 3, gpu=args.device != "cpu")
+            self.crf = CRF(tagset_size=self.num_labels - 3, gpu=device != "cpu")
         else:
             self.crf = None
 
@@ -177,7 +177,7 @@ class WMSeg(nn.Module):
     @classmethod
     def from_spec(cls, spec, model, args):
         spec = spec.copy()
-        res = cls(args=args, **spec)
+        res = cls(device=args.device, **spec)
         res.load_state_dict(model)
         return res
 
