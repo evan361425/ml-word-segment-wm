@@ -40,8 +40,7 @@ def predict(args, seg_model: WMSeg = None):
     print("device: {} gpu#: {}, 16-bits training: {}".format(device, n_gpu, args.fp16))
 
     if seg_model is None:
-        model = torch.load(args.model, map_location=device)
-        seg_model = WMSeg.from_spec(model["spec"], model["state_dict"], args)
+        seg_model = load_model(args.model, args.no_cuda)
 
     eval_examples = seg_model.load_data(args.input, do_predict=True)
     convert_examples_to_features = seg_model.convert_examples_to_features

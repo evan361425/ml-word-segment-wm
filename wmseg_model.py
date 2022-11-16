@@ -175,9 +175,9 @@ class WMSeg(nn.Module):
         return self.state_dict()
 
     @classmethod
-    def from_spec(cls, spec, model, args):
+    def from_spec(cls, spec, model, device):
         spec = spec.copy()
-        res = cls(device=args.device, **spec)
+        res = cls(device=device, **spec)
         res.load_state_dict(model)
         return res
 
