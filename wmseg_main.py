@@ -8,10 +8,10 @@ from wmseg_eval import eval_sentence
 from wmseg_model import WMSeg
 
 
-def load_model(path, no_cuda=False):
+def load_model(path, no_cuda=True):
     device, _ = get_device(no_cuda)
     model = torch.load(path, map_location=device)
-    seg_model = WMSeg.from_spec(model["spec"], model["state_dict"], device)
+    seg_model = WMSeg.from_spec(model["spec"], model["state_dict"], device.type)
     return seg_model
 
 
@@ -36,7 +36,6 @@ def predict(args, seg_model: WMSeg = None):
         )
 
     device, n_gpu = get_device(args.no_cuda)
-    args.device = device.type
     print("device: {} gpu#: {}, 16-bits training: {}".format(device, n_gpu, args.fp16))
 
     if seg_model is None:
