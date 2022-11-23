@@ -13,6 +13,7 @@ requests = "*"
 regex = "*"
 seqeval = "*"
 psutil = "*"
+lxml = "*"
 
 [dev-packages]
 ipykernel = "*"
